@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Information-Theoretic Impossibility of Audit-Ready Quantum CPUs</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Noto Serif for body, Noto Sans for headings/UI -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;700&family=Noto+Serif:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <!-- MathJax Configuration -->
+    <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        displayMath: [['\\[', '\\]'], ['$$', '$$']],
+        tags: 'ams',
+        macros: {
+          Tr: "\\operatorname{Tr}",
+          ket: ["|#1\\rangle", 1],
+          bra: ["\\langle#1|", 1],
+          braket: ["\\langle#1|#2\\rangle", 2],
+          density: ["\\mathcal{D}(#1)", 1],
+          hilbert: "\\mathcal{H}",
+          norm: ["\\|#1\\|", 1],
+          dnorm: ["\\|#1\\|_{\\diamond}", 1],
+          TV: "\\operatorname{TV}",
+          Obs: "\\operatorname{Obs}",
+          supp: "\\operatorname{supp}"
+        }
+      },
+      svg: {
+        fontCache: 'global'
+      }
+    };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        body {
+            font-family: 'Noto Serif', serif;
+            line-height: 1.8;
+            color: #1a202c;
+            background-color: #f8fafc;
+        }
+        h1, h2, h3, h4 {
+            font-family: 'Noto Sans', sans-serif;
+            color: #111827;
+        }
+        
+        /* Theorem Environments */
+        .theorem-box {
+            margin: 1.5rem 0;
+            padding: 1rem 1.25rem;
+            border-left: 4px solid;
+            background-color: #fff;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border-radius: 0.25rem;
+            overflow-x: auto;
+        }
+        
+        /* Definition Style */
+        .definition {
+            border-color: #3b82f6; /* Blue */
+            background-color: #eff6ff;
+        }
+        .definition-title {
+            color: #1e40af;
+            font-weight: 700;
+            font-family: 'Noto Sans', sans-serif;
+        }
+
+        /* Axiom/Lemma/Proposition Style */
+        .axiom {
+            border-color: #8b5cf6; /* Purple */
+            background-color: #f5f3ff;
+        }
+        .axiom-title {
+            color: #5b21b6;
+            font-weight: 700;
+            font-family: 'Noto Sans', sans-serif;
+        }
+
+        /* Theorem Style */
+        .theorem {
+            border-color: #ef4444; /* Red */
+            background-color: #fef2f2;
+        }
+        .theorem-title {
+            color: #991b1b;
+            font-weight: 700;
+            font-family: 'Noto Sans', sans-serif;
+        }
+
+        /* Proof Style */
+        .proof {
+            margin: 1rem 0 2rem 0;
+            font-style: normal;
+            position: relative;
+            padding-left: 1rem;
+            border-left: 2px solid #cbd5e1;
+            overflow-x: hidden;
+        }
+        .proof-title {
+            font-style: italic;
+            font-weight: 700;
+            color: #475569;
+        }
+        .qedsymbol {
+            float: right;
+            color: #64748b;
+        }
+        .qedsymbol::after {
+            content: "∎";
+        }
+
+        /* MathJax Overflow Handling */
+        mjx-container[display="true"] {
+            overflow-x: auto !important;
+            overflow-y: hidden !important;
+            max-width: 100% !important;
+            padding: 0.5rem 0;
+        }
+
+        /* Abstract */
+        .abstract-container {
+            max-width: 85%;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            font-size: 0.95rem;
+        }
+        
+        /* Bibliography Item */
+        .bib-item {
+            display: flex;
+            margin-bottom: 0.75rem;
+            align-items: flex-start;
+        }
+        .bib-label {
+            min-width: 2.5rem;
+            font-weight: 700;
+            color: #374151;
+        }
+
+        /* Nav Button */
+        .nav-button {
+            transition: all 0.3s ease;
+            font-family: 'Noto Sans', sans-serif;
+            text-decoration: none !important;
+        }
+        .nav-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        /* Disclaimer Section */
+        .disclaimer-box {
+            background-color: #f1f5f9;
+            border-radius: 0.375rem;
+            border: 1px solid #e2e8f0;
+            padding: 1.25rem;
+            margin-top: 3rem;
+        }
+
+        /* Print optimizations */
+        @media print {
+            body { background-color: white; }
+            .theorem-box { box-shadow: none; border: 1px solid #ccc; border-left-width: 4px; }
+            .nav-section { display: none; }
+            mjx-container[display="true"] { overflow: visible !important; }
+        }
+    </style>
+</head>
+<body class="p-6 md:p-12 lg:p-16 min-h-screen text-justify">
+
+    <article class="max-w-4xl mx-auto bg-white p-8 md:p-16 shadow-lg rounded-sm overflow-hidden">
+        
+        <!-- Header -->
+        <header class="text-center mb-12 border-b pb-8">
+            <h1 class="text-2xl md:text-3xl font-bold mb-4 leading-relaxed">
+                Information-Theoretic Impossibility<br>of Audit-Ready Quantum CPUs<br>
+                <span class="text-base font-normal text-gray-600 mt-2 block">Kernel v3: Auditability Tradeoffs under Information-Theoretic Guarantees</span>
+            </h1>
+            <div class="text-lg text-gray-700 font-medium mb-2 tracking-widest">
+                GhostDrift Research Institute
+            </div>
+            <div class="text-gray-500 text-sm text-center">
+                <script>document.write(new Date().toLocaleDateString('en-US', {year: 'numeric', month: 'long', day: 'numeric'}));</script>
+            </div>
+        </header>
+
+        <!-- Abstract -->
+        <section class="abstract-container">
+            <div class="text-center font-bold text-sm text-gray-600 mb-2 uppercase tracking-wider">Abstract</div>
+            <p class="italic">
+                This report rigorously investigates whether quantum computing systems can satisfy industrial-grade audit requirements. We define a new standard, the <strong>Audit-Ready CPU (ARCPU)</strong>, characterized by three core requirements: (A) Non-Invasiveness under worst-case inputs (via the Diamond Norm), (B) Responsibility Boundary Closure under Minimax criteria, and (C) Strong Replayability.
+                The main theorem of this paper proves that these requirements are information-theoretically incompatible in systems involving non-commutative state transitions—the essence of quantum computing—based on fundamental principles such as the Helstrom bound, the Data Processing Inequality, and the No-Broadcasting theorem.
+                This impossibility is fundamental and independent of specific algorithms, indicating that satisfying the ARCPU standard necessitates either the abandonment of quantum properties or a compromise on audit specifications. Note that this report primarily targets <strong>audit intensities requiring "non-retroactivity"</strong> (e.g., in financial, regulatory, or litigation contexts) and does not preclude the validity of statistical verification or computational assumptions (e.g., Mahadev's protocol).
+            </p>
+        </section>
+
+        <!-- Section 1 -->
+        <section class="mt-12">
+            <h2 class="text-xl font-bold border-b-2 border-gray-200 pb-2 mb-6 text-left">1. Introduction: Game-Theoretic Formulation of Auditing</h2>
+            
+            <p class="mb-4">
+                We formulate the problem of auditing a physical device as a mathematical game played between a Verifier and the World.
+            </p>
+
+            <div class="theorem-box definition text-left">
+                <div class="definition-title">Definition 1.1 [World and Responsibility Labels]</div>
+                <div class="mt-2">
+                    Let $\mathcal{W}$ be the parameter space encompassing the system's implementation states and environmental conditions. $\mathcal{W}$ is partitioned into two disjoint sets based on the true locus of responsibility (e.g., Internal Device Fault vs. External Operational Fault):
+                    \[
+                    \mathcal{W} = \mathcal{W}_0 \sqcup \mathcal{W}_1
+                    \]
+                    We define the responsibility label for a world $w \in \mathcal{W}$ as $\operatorname{Resp}(w) \in \{0, 1\}$, such that $w \in \mathcal{W}_b \iff \operatorname{Resp}(w) = b$.
+                </div>
+            </div>
+
+            <div class="theorem-box definition text-left">
+              <div class="definition-title">Definition 1.2 [Audit Strategy and Observation Channels]</div>
+              <div class="mt-2">
+                The Verifier adopts a "Strategy" $S$. This strategy encompasses (i) input sequence generation and randomization, (ii) preparation of input states potentially entangled with a reference system, (iii) adaptive queries (if necessary), and (iv) final measurement (classicalization) rules.
+                We model the entire process abstractly as a single effective channel plus measurement to maintain generality.
+            
+                <p class="mt-3">
+                  The behavior of the system (CPU) in world $w\in\mathcal{W}$ is modeled as a quantum channel (CPTP map) with an identical output register, conditioned on the audit mode (log flag) $\ell\in\{0,1\}$:
+                  $$
+                  \mathcal{N}^{(\ell)}_w:\mathcal{D}(\mathcal{H}_{\mathrm{in}})\to \mathcal{D}(\mathcal{H}_{\mathrm{out}}\otimes \mathcal{H}_{\mathrm{log}})
+                  $$
+                </p>
+            
+                <ul class="list-disc list-inside ml-4 mt-2">
+                  <li>
+                    <strong>No-Log (Dummy Log) Mode</strong> $\ell=0$:
+                    The log register is initialized to a fixed state $\tau_{\mathrm{log}}$ (e.g., $\ket{0}\bra{0}$), uncorrelated with the input or internal state.
+                    Specifically, there exists an external I/O channel $\mathcal{M}_w:\mathcal{D}(\mathcal{H}_{\mathrm{in}})\to\mathcal{D}(\mathcal{H}_{\mathrm{out}})$ such that:
+                    $$
+                    \mathcal{N}^{(0)}_w(\rho)=\mathcal{M}_w(\rho)\otimes \tau_{\mathrm{log}}
+                    $$
+                  </li>
+                  <li>
+                    <strong>Logged Mode</strong> $\ell=1$:
+                    The log register is generated dependently on internal processes (subject to subsequent non-invasiveness constraints).
+                  </li>
+                </ul>
+            
+                <p class="mt-3">
+                  Under strategy $S$, world $w$, and mode $\ell$, the probability distribution of the final audit transcript (classical observation data) is defined as:
+                  $$
+                  \Obs^{(\ell)}_w(S)\in\mathcal{P}(\Omega)
+                  $$
+                  where $\Omega$ is the sample space of classical strings obtained via the final measurement (comprising I/O logs, audit tags, timestamps, etc.).
+                </p>
+            
+                <p class="mt-3 text-sm text-gray-700">
+                  Note: Under this definition, Requirement (A♦), "logging does not affect external behavior," is evaluated as the distance between the overall channels induced by log generation relative to the dummy log baseline, rather than the mere presence or absence of a register.
+                </p>
+              </div>
+            </div>
+        </section>
+
+        <!-- Section 2 -->
+        <section class="mt-12 text-left">
+            <h2 class="text-xl font-bold border-b-2 border-gray-200 pb-2 mb-6">2. Rigorous Definition of ARCPU Standards</h2>
+            
+            <p class="mb-4">
+                We now define the mathematical requirements for a system to be certified as an "Audit-Ready CPU" (ARCPU). Here, we adopt Worst-case guarantees to preclude any potential loopholes.
+            </p>
+
+            <p class="mt-4 text-sm text-gray-700 mb-4">
+              We adopt worst-case / minimax criteria not to model "average" audits, but to ensure that the <strong>closure of the responsibility boundary itself serves as irrefutable evidence</strong> in scenarios where <strong>post-hoc shifting of specifications or operations</strong> might occur. Consequently, $\varepsilon$ and $\delta$ are treated as design parameters representing audit intensity, rather than fixed constants.
+            </p>
+
+            <div class="theorem-box definition">
+              <div class="definition-title">Definition 2.0 [ARCPU Tiers (Stratification of Audit Intensity)]</div>
+              <div class="mt-2">
+                To clarify distinctions in audit intensity, we stratify ARCPU requirements into three tiers:
+                <ul class="list-disc list-inside ml-4 mt-2">
+                  <li><strong>Tier-1</strong>: Non-Invasiveness of External I/O (A♦)</li>
+                  <li><strong>Tier-2</strong>: Responsibility Boundary Closure under Worst-Case (B★)</li>
+                  <li><strong>Tier-3 (Strongest)</strong>: Preservation and Double Supply of Evidence/Boundary State (C#)</li>
+                </ul>
+                Important: The impossibility proven via No-Broadcasting (Theorem 4.2) targets <strong>Tier-3</strong> and does not negate relaxed audit frameworks (e.g., statistical/computational guarantees) that satisfy only Tier-1/2.
+              </div>
+            </div>
+
+            <div class="theorem-box definition">
+                <div class="definition-title">Definition 2.1 [Requirement A♦: Diamond Non-Invasiveness]</div>
+                <div class="mt-2">
+                    Log acquisition must not perturb the system's external behavior. We define this using the Diamond Norm (Completely Bounded Trace Norm).
+                    For a given tolerance $\varepsilon \in [0, 1]$, the following must hold for any world $w \in \mathcal{W}$:
+                    \[
+                    \dnorm{\mathcal{N}_w^{(1)} - \mathcal{N}_w^{(0)}} \le 2\varepsilon
+                    \]
+                    Here, $\|\cdot\|_\diamond$ denotes the optimal distinguishability of quantum channels <a href="#ref-watrous" class="text-blue-600 hover:underline">[1]</a>.
+                </div>
+            </div>
+
+            <div class="theorem-box axiom">
+                <div class="axiom-title">Lemma 2.2 [Operational Meaning of Non-Invasiveness]</div>
+                <div class="mt-2">
+                    When Requirement (A♦) is satisfied, the Total Variation Distance (TV) between observation distributions with and without logging is bounded as follows for any audit strategy $S$ (including those utilizing reference systems) and any post-processing measurement:
+                    \[
+                    \TV(\Obs_w^{(1)}(S), \Obs_w^{(0)}(S)) \le \varepsilon
+                    \]
+                    This follows from the standard result that $\frac{1}{2}\|\mathcal{N}_w^{(1)} - \mathcal{N}_w^{(0)}\|_\diamond$ quantifies the bias (advantage) in optimal success probability for distinguishing unknown channels in a single shot. This guarantees that detection of invasiveness, even using correlated inputs, is suppressed to $\varepsilon$.
+                </div>
+            </div>
+
+            <div class="theorem-box definition">
+              <div class="definition-title">Definition 2.3 [Requirement B★: Minimax Responsibility Closure]</div>
+              <div class="mt-2">
+                We require that the responsibility label $b\in\{0,1\}$ can be uniquely estimated from the audit transcript.
+                The Verifier designs a <em>Strategy</em> $S$ and a <em>Decision Function</em> $\psi:\Omega\to\{0,1\}$, while the World selects the worst-case $w$ within a responsibility class.
+            
+                <p class="mt-3">
+                  First, define the worst-case risk for any pair $(S,\psi)$:
+                  $$
+                  \mathrm{Risk}(S,\psi)
+                  :=
+                  \sup_{b\in\{0,1\}}\ \sup_{w\in\mathcal{W}_b}\ 
+                  \Pr_{\omega\sim \Obs^{(1)}_w(S)}\big[\psi(\omega)\neq b\big]
+                  $$
+                </p>
+            
+                <p class="mt-3">
+                  Define the Minimax risk as:
+                  $$
+                  \mathrm{Risk}_\star := \inf_{S,\psi}\ \mathrm{Risk}(S,\psi)
+                  $$
+                  Requirement (B★) is satisfied if, for a permissible error rate $\delta\in[0,1/2)$:
+                  $$
+                  \mathrm{Risk}_\star \le \delta
+                  $$
+                </p>
+            
+                <p class="mt-3 text-sm text-gray-700">
+                  Note: This definition implies a Minimax criterion where the "Verifier optimizes the design, while the World exploits the worst conditions," avoiding the excessive requirement that "any arbitrary strategy $S$ must succeed" ($\sup_S$).
+                </p>
+              </div>
+            </div>
+        </section>
+
+        <!-- Section 3 -->
+        <section class="mt-12 text-left">
+            <h2 class="text-xl font-bold border-b-2 border-gray-200 pb-2 mb-6">3. Information-Theoretic Impossibility of Responsibility Closure</h2>
+            
+            <p class="mb-4">
+                In this section, we prove that (A♦) and (B★) are fundamentally incompatible in quantum systems. First, we derive a mathematical reduction from system engineering premises.
+            </p>
+
+            <div class="theorem-box axiom">
+                <div class="axiom-title">Assumption 3.1 [BM: Boundary Mediation]</div>
+                <div class="mt-2">
+                    Let $\mathcal{H}_{\text{core}}$ be the internal state space of the system (CPU) and $\mathcal{H}_B$ be the boundary state space serving as the interface with the outside.
+                    All information flowing to the outside (Output/Log) is accessible only via the boundary $\mathcal{H}_B$; there is no direct access to $\mathcal{H}_{\text{core}}$. That is, the entire observation process can be described as the composition of a CPTP map on $\mathcal{H}_B$ (after tracing out $\mathcal{H}_{\text{core}}$) and classical post-processing.
+                    <span class="text-sm text-gray-700 block mt-2">Note: This assumption is not specific to quantum mechanics but abstracts observation constraints inherent in general hardware audits (I/O boundaries).</span>
+                </div>
+            </div>
+
+            <div class="theorem-box axiom">
+                <div class="axiom-title">Lemma 3.2 [IL: Interface Locality / Reduction]</div>
+                <div class="mt-2">
+                    Under Assumption (BM), for any strategy $S$, there exists a channel $\Gamma_S: \mathcal{D}(\mathcal{H}_B) \to \mathcal{P}(\Omega)$ such that the observation distribution depends solely on the boundary state $\rho_w^B = \Tr_{\text{core}}(\rho_w^{\text{total}})$:
+                    \[
+                    \Obs_w^{(\ell)}(S) = \Gamma_S(\rho_w^B)
+                    \]
+                    (This implies that for either mode $\ell \in \{0, 1\}$, the final distribution is representable as a map from the boundary state.)
+                    Thus, information regarding the difference in world $w$ reduces to the difference in the boundary state $\rho_w^B$.
+                </div>
+            </div>
+
+            <p class="mb-4">
+                Next, we introduce fundamental theorems of Quantum Information Theory.
+            </p>
+
+            <div class="theorem-box definition">
+              <div class="definition-title">Definition 3.2’ [Normalized Trace Distance]</div>
+              <div class="mt-2">
+                In this paper, we utilize the following definition for the distance between quantum states:
+                $$
+                  \Delta(\rho,\sigma):=\frac12\|\rho-\sigma\|_1
+                $$
+                ($\|\cdot\|_1$ denotes the trace norm). With this normalization, for any measurement (classicalization) $\mathsf{M}$, the following holds:
+                $$
+                  \TV(\mathsf{M}(\rho),\mathsf{M}(\sigma)) \le \Delta(\rho,\sigma)
+                $$
+              </div>
+            </div>
+
+            <div class="theorem-box axiom">
+                <div class="axiom-title">Lemma 3.3 [Fundamental Inequalities]</div>
+                <div class="mt-2">
+                    <ol class="list-decimal list-inside space-y-2">
+                        <li><strong>Helstrom Bound and TV Distance</strong>: The minimum error probability $p_e^*$ for distinguishing two distributions $P, Q$ is given by $p_e^*(P, Q) = \frac{1 - \TV(P, Q)}{2}$ <a href="#ref-helstrom" class="text-blue-600 hover:underline">[2]</a>.</li>
+                        <li><strong>Data Processing Inequality (Including Measurement)</strong>:
+                            For any CPTP map $\Lambda$, $\Delta(\Lambda(\rho),\Lambda(\sigma))\le \Delta(\rho,\sigma)$.
+                            In particular, for any measurement (classicalization) $\mathsf{M}$, $\TV(\mathsf{M}(\rho),\mathsf{M}(\sigma))\le \Delta(\rho,\sigma)$ holds <a href="#ref-nielsen" class="text-blue-600 hover:underline">[3]</a>.
+                        </li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="theorem-box theorem">
+              <div class="theorem-title">Theorem 3.4 [ARCPU Impossibility Theorem: Minimax Closure vs Diamond Non-Invasiveness]</div>
+              <div class="mt-2">
+                Let Assumption (BM) hold, and assume there exist two worlds $w_0 \in \mathcal{W}_0,\, w_1 \in \mathcal{W}_1$ with different responsibility labels.
+                Let their respective boundary states be $\rho := \rho_{w_0}^B,\ \sigma := \rho_{w_1}^B$.
+            
+                <p class="mt-3">
+                  Furthermore, suppose Requirement (A♦) holds with tolerance $\varepsilon$ and Requirement (B★) holds with error rate $\delta$.
+                  Then, the following necessary condition applies:
+                  $$
+                  \Delta(\rho,\sigma) + 2\varepsilon \ \ge\ 1-2\delta.
+                  $$
+                  Consequently, the simultaneous satisfaction of (A♦) and (B★) is impossible whenever:
+                  $$
+                  \Delta(\rho,\sigma) + 2\varepsilon \ <\ 1-2\delta
+                  $$
+                </p>
+              </div>
+            </div>
+            
+            <div class="theorem-box axiom">
+              <div class="axiom-title">Note 3.4’ [This Theorem establishes a "Performance Bound", not merely "Impossibility"]</div>
+              <div class="mt-2">
+                Theorem 3.4 provides a <strong>lower bound (tradeoff)</strong> that the distinguishability of boundary states $\Delta(\rho,\sigma)$ must satisfy against invasiveness $\varepsilon$ and error rate $\delta$.
+                Thus, the conclusion is not that "Quantum is inherently unauditable," but rather that <em>enforcing audit specifications solely through information-theoretic guarantees reveals an unavoidable lower bound between parameters.</em>
+              </div>
+            </div>
+
+            <p class="mt-3 text-sm text-gray-700">
+              Example: If we require audit intensity $\varepsilon=0.05$ (log influence $\le 5\%$ in TV) and $\delta=0.1$ (worst-case error $\le 10\%$), Theorem 3.4 implies $\Delta(\rho,\sigma)\ge 1-2\delta-2\varepsilon=0.7$ is required.
+              In other words, to close the responsibility boundary while maintaining non-invasiveness, the boundary states must be strongly separated.
+            </p>
+
+            <div class="proof">
+              <div class="proof-title">Proof</div>
+              <div class="mt-2 text-justify">
+                <p class="mb-3">
+                  (1) From (B★), there exists a strategy $S$ and decision function $\psi$ such that the worst-case risk is $\le \delta$.
+                  Specifically, this pair $(S,\psi)$ succeeds in distinguishing the two worlds $w_0, w_1$ with error $\le \delta$.
+                  Invoking the Helstrom bound (Lemma 3.3(1)), the Total Variation distance between the corresponding observation distributions (Logged Mode $\ell=1$) must satisfy:
+                  $$
+                  \TV\big(\Obs^{(1)}_{w_0}(S),\Obs^{(1)}_{w_1}(S)\big)\ \ge\ 1-2\delta
+                  \quad\text{--- (Eq 1)}
+                  $$
+                </p>
+            
+                <p class="mb-3">
+                  (2) By the triangle inequality:
+                  $$
+                  \begin{aligned}
+                  \TV\big(\Obs^{(1)}_{w_0}(S),\Obs^{(1)}_{w_1}(S)\big)
+                  &\le
+                  \TV\big(\Obs^{(1)}_{w_0}(S),\Obs^{(0)}_{w_0}(S)\big) \\
+                  &\quad +\TV\big(\Obs^{(0)}_{w_0}(S),\Obs^{(0)}_{w_1}(S)\big) \\
+                  &\quad +\TV\big(\Obs^{(0)}_{w_1}(S),\Obs^{(1)}_{w_1}(S)\big).
+                  \end{aligned}
+                  \quad\text{--- (Eq 2)}
+                  $$
+                </p>
+            
+                <p class="mb-3">
+                  (3) From (A♦) and Lemma 2.2, for any $w$ and strategy $S$:
+                  $$
+                  \TV\big(\Obs^{(1)}_{w}(S),\Obs^{(0)}_{w}(S)\big)\le \varepsilon
+                  \quad\text{--- (Eq 3)}
+                  $$
+                  holds. Thus, the 1st and 3rd terms of (Eq 2) are each bounded by $\varepsilon$.
+                </p>
+            
+                <p class="mb-3">
+                  (4) From (BM) and Lemma 3.2 (IL), the observation distribution in Mode $\ell=0$ depends solely on the boundary state.
+                  That is, there exists a map $\Gamma^{(0)}_{S}$ (dependent on $S$) such that:
+                  $$
+                  \Obs^{(0)}_{w_i}(S)=\Gamma^{(0)}_{S}(\rho_{w_i}^B)\quad(i=0,1).
+                  $$
+                  Applying the Data Processing Inequality (Lemma 3.3(2)):
+                  $$
+                  \TV\big(\Obs^{(0)}_{w_0}(S),\Obs^{(0)}_{w_1}(S)\big)
+                  =
+                  \TV\big(\Gamma^{(0)}_{S}(\rho),\Gamma^{(0)}_{S}(\sigma)\big)
+                  \le
+                  \Delta(\rho,\sigma).
+                  \quad\text{--- (Eq 4)}
+                  $$
+                </p>
+            
+                <p class="mb-3">
+                  (5) Combining (Eq 2), (Eq 3), and (Eq 4) yields:
+                  $$
+                  \TV\big(\Obs^{(1)}_{w_0}(S),\Obs^{(1)}_{w_1}(S)\big)\ \le\ \Delta(\rho,\sigma)+2\varepsilon.
+                  \quad\text{--- (Eq 5)}
+                  $$
+                  Combining this result with (Eq 1) provides the necessary condition:
+                  $$
+                  1-2\delta\ \le\ \Delta(\rho,\sigma)+2\varepsilon
+                  $$
+                  The proof is complete.
+                  <span class="qedsymbol"></span>
+                </p>
+              </div>
+            </div>
+
+            <div class="theorem-box axiom">
+              <div class="axiom-title">Lemma 3.5 [Conditional: Non-Commutativity Implies Imperfect Distinguishability]</div>
+              <div class="mt-2">
+                Assume there exist two worlds $w_0\in\mathcal{W}_0,\ w_1\in\mathcal{W}_1$ with different responsibility labels, and their boundary states $\rho:=\rho_{w_0}^B,\ \sigma:=\rho_{w_1}^B$ satisfy:
+                $$
+                [\rho,\sigma]\neq 0
+                $$
+                Then, it follows that:
+                $$
+                \Delta(\rho,\sigma) < 1
+                $$
+                That is, as long as boundary states are non-commutative, they cannot be perfectly distinguished (i.e., they are non-orthogonal).
+            
+                <div class="mt-3">
+                  <span class="font-bold">(Proof Sketch)</span>
+                  If $\Delta(\rho,\sigma)=1$, then $\rho$ and $\sigma$ must have orthogonal supports (disjoint supports).
+                  Orthogonal supports imply $\rho\sigma=0$, which further implies $\rho\sigma=\sigma\rho=0$, making them commutative.
+                  Therefore, if $[\rho,\sigma]\neq 0$, then $\Delta(\rho,\sigma)\neq 1$, which implies $\Delta(\rho,\sigma)<1$.
+                </div>
+            
+                <p class="mt-3 text-sm text-gray-700">
+                  Note: We do not claim here that non-commutative pairs <em>always</em> exist. Existence depends on the design of the world class $\mathcal{W}$ (e.g., implementation variances involving continuous parameters, noise, temperature, clock jitter).
+                  The claim is a conditional information-theoretic proposition: <em>If</em> the responsibility boundary involves non-commutative overlaps, the impossibility region of Theorem 3.4 is activated.
+                </p>
+              </div>
+            </div>
+        </section>
+
+        <!-- Section 4 -->
+        <section class="mt-12 text-left">
+            <h2 class="text-xl font-bold border-b-2 border-gray-200 pb-2 mb-6">4. Strong Replay Closure and No-Broadcasting</h2>
+            <p class="mb-4">
+                We independently prove quantum mechanical impossibility for Requirement (C).
+            </p>
+
+            <div class="theorem-box definition">
+                <div class="definition-title">Definition 4.1 [Requirement C#: Strong Replay (Double Supply of Boundary Evidence)]</div>
+                <div class="mt-2">
+                    To guarantee reproducibility in an audit, one must not only recalculate outputs from logs but also be able to reconstruct the "boundary state" itself, which serves as the foundation of correctness.
+                    Specifically, there exists a CPTP map (Broadcasting Map) $\mathcal{B}: \mathcal{D}(\mathcal{H}_B) \to \mathcal{D}(\mathcal{H}_B \otimes \mathcal{H}_B)$ such that for any state $\rho \in \mathcal{K} \subset \mathcal{D}(\mathcal{H}_B)$, the following holds:
+                    \[ \Tr_1 \mathcal{B}(\rho) = \Tr_2 \mathcal{B}(\rho) = \rho \]
+                </div>
+                <p class="mt-3 text-sm text-gray-700">
+                  Note: Requirement (C#) represents the Tier-3 (Strongest) formulation, maximizing "preservation of evidence (boundary state itself)" in audits.
+                  In practice, weaker forms of reproducibility—such as (i) preservation of classically hashed measurement results, (ii) statistical verification, or (iii) verification based on computational assumptions—may suffice. These forms are not the target of negation in this paper.
+                </p>
+            </div>
+
+            <div class="theorem-box theorem">
+                <div class="theorem-title">Theorem 4.2 [Impossibility via No-Broadcasting Theorem]</div>
+                <div class="mt-2">
+                    If the boundary state set $\mathcal{K}$ contains non-commutative state pairs, a map $\mathcal{B}$ satisfying (C#) does not exist <a href="#ref-barnum" class="text-blue-600 hover:underline">[5]</a>.
+                    Therefore, in quantum computing, Strong Replayability ("continuing calculation while preserving evidence (non-invasively)") is principally impossible.
+                </div>
+            </div>
+
+            <h3 class="text-lg font-bold mt-8 mb-4">4.1 Relation to Existing Quantum Verification Research</h3>
+            <div class="theorem-box axiom">
+                <div class="axiom-title">Proposition 4.3 [Non-Contradiction and Specification Difference]</div>
+                <div class="mt-2">
+                    "Classical Verification of Quantum Computations" by Mahadev et al. <a href="#ref-mahadev" class="text-blue-600 hover:underline">[6]</a> performs verification under interactive protocols and assumptions of computational hardness (e.g., LWE). Its requirements differ from the ARCPU standards defined herein (simultaneous satisfaction of (A♦) Non-Invasiveness, (B★) Minimax Responsibility Boundary, and (C#) Strong Replay).
+                    The impossibility theorem in this paper demonstrates that ARCPU standards impose excessive (physically impossible) demands on quantum systems, and does not negate the effectiveness of existing computational verification methods.
+                </div>
+            </div>
+        </section>
+
+        <!-- Conclusion -->
+        <section class="mt-12 text-left">
+            <h2 class="text-xl font-bold border-b-2 border-gray-200 pb-2 mb-6">5. Conclusion: Implications for Specification Compromise</h2>
+            <p class="mb-4">
+                We have demonstrated that satisfying the ARCPU standards defined in this paper (especially the Tier-2/3 worst-case closure under information-theoretic guarantees) is impossible in certain parameter regions, or at least cannot avoid the performance tradeoff bound given by Theorem 3.4.
+                Any counterargument to this conclusion does not constitute a mathematical refutation, but rather a declaration of "Specification Compromise" in one of the following forms:
+            </p>
+            <ul class="list-disc list-inside ml-4 space-y-2 bg-gray-50 p-4 rounded border border-gray-200">
+                <li><strong>Compromise on (A♦)</strong>: Allow destruction (invasion) of quantum states via logging.</li>
+                <li><strong>Compromise on (B★)</strong>: Relinquish responsibility determination in worst cases, admitting regions of unknown responsibility (Ghost Drift).</li>
+                <li><strong>Compromise on (C#)</strong>: Abandon perfect reproducibility in favor of probabilistic verification.</li>
+                <li><strong>Compromise on (BM)</strong>: Posit physically unrealistic assumptions that the Auditor can directly intervene within the system Core.</li>
+            </ul>
+        </section>
+
+        <!-- Bibliography -->
+        <section class="mt-16 pt-8 border-t-2 border-gray-800 text-left">
+            <h2 class="text-lg font-bold mb-6">References</h2>
+            
+            <div class="bib-item" id="ref-watrous">
+                <div class="bib-label">[1]</div>
+                <div>J. Watrous, <em>The Theory of Quantum Information</em>, Cambridge University Press, 2018. (Diamond Norm & Channel Distance)</div>
+            </div>
+
+            <div class="bib-item" id="ref-helstrom">
+                <div class="bib-label">[2]</div>
+                <div>C. W. Helstrom, <em>Quantum Detection and Estimation Theory</em>, Academic Press, 1976.</div>
+            </div>
+
+            <div class="bib-item" id="ref-nielsen">
+                <div class="bib-label">[3]</div>
+                <div>M. A. Nielsen and I. L. Chuang, <em>Quantum Computation and Quantum Information</em>, 10th Anniversary Ed., Cambridge University Press, 2010.</div>
+            </div>
+
+            <div class="bib-item" id="ref-fuchs">
+                <div class="bib-label">[4]</div>
+                <div>C. A. Fuchs and A. Peres, "Quantum-State Disturbance versus Information Gain," <em>Physical Review A</em>, vol. 53, 1996.</div>
+            </div>
+
+            <div class="bib-item" id="ref-barnum">
+                <div class="bib-label">[5]</div>
+                <div>H. Barnum et al., "Noncommuting Mixed States Cannot Be Broadcast," <em>Phys. Rev. Lett.</em>, 76, 2818, 1996.</div>
+            </div>
+
+            <div class="bib-item" id="ref-mahadev">
+                <div class="bib-label">[6]</div>
+                <div>U. Mahadev, "Classical Verification of Quantum Computations," <em>SIAM J. Comput.</em>, 51(1), 2022.</div>
+            </div>
+        </section>
+
+        <!-- Audit Disclaimer Section -->
+        <section class="disclaimer-box text-left leading-relaxed">
+            <h3 class="text-sm font-bold text-gray-700 mb-2">【Note on the Nature of this Report】</h3>
+            <p class="text-sm text-gray-600">
+                This document is an Engineering Audit Report evaluating standards based on <strong>"System Accountability" and "Auditability under Finite Resources"</strong> for industrial implementation, rather than a pursuit of pure mathematical truth. The mathematical models are constructed to maximally visualize operational risks in reality.
+            </p>
+        </section>
+
+        <!-- Navigation Section -->
+        <section class="mt-12 pt-8 border-t border-gray-100 text-center nav-section">
+            <div class="mb-4 text-gray-500 text-sm italic font-serif">
+                Mathematical Framework provided by GhostDrift Research Institute
+            </div>
+            <a href="https://www.ghostdriftresearch.com/" class="nav-button inline-flex items-center px-8 py-3 bg-gray-900 text-white font-medium rounded shadow-sm hover:bg-gray-800 transition-all duration-300 group">
+                <span class="mr-2 text-lg">←</span>
+                Back to GhostDrift Research Institute HP
+            </a>
+        </section>
+
+    </article>
+
+    <!-- Footer Margin -->
+    <div class="h-16"></div>
+
+</body>
+</html>
